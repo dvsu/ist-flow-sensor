@@ -11,11 +11,33 @@ class ISTFS7:
         self.adc = ADC()
         self.apin = self.adc.channel(pin=pin, attn=ADC.ATTN_11DB)
     
-    def get_pin_voltage(self) -> float:
-        return self.apin.voltage() / 1000
+    def _get_pin_voltage(self) -> float:
+        try:
+            return self.apin.voltage() / 1000
 
-    def velocity(self) -> float:
-        U = self.get_pin_voltage()
-        num = ((U-self.Uo)*(U+self.Uo))**(1/self.n)
-        den = ((self.k)**(1/self.n))*((self.Uo)**(2/self.n))
-        return num / den
+        except Exception as e:
+            return 0
+    
+    def _velocity(self) -> float:
+        try:
+            U = self._get_pin_voltage()
+
+            num = ((U-self.Uo)*(U+self.Uo))**(1/self.n)
+            den = ((self.k)**(1/self.n))*((self.Uo)**(2/self.n))
+            return abs(num) / den
+        
+        except Exception as e:
+            return 0
+
+    def get_measurement(self) -> dict:
+        try:
+            return {
+                "velocity": round(self._velocity(), 3),
+                "velocity_unit": "m/s"
+            }
+        
+        except Exception as e:
+            return {
+                "velocity": 0.0,
+                "velocity_unit": "m/s"
+            }  
